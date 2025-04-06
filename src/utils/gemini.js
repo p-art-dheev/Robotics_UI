@@ -49,10 +49,12 @@ Format your response exactly as shown in this JSON format:
 {
   "type": "[biodegradable or non-biodegradable]",
   "material": "[primary material, e.g., plastic, paper, wood, metal, glass, etc.]",
-  "disposal": "[brief disposal recommendation]", 
+  "disposal": "[SPECIFIC ACTIONABLE disposal recommendation with concrete steps - NEVER use 'Check local guidelines']", 
   "recyclable": "[yes, no, or potentially]",
   "hazardous": "[yes or no]"
 }
+
+IMPORTANT: For disposal recommendation, provide specific, actionable steps like "Rinse thoroughly, remove labels, place in recycling bin" instead of generic advice like "Check local guidelines".
 
 Provide accurate classification based on environmental science. If you're unsure, make the best determination based on similar items. Always provide a complete response with all fields filled in.`;
 
@@ -67,22 +69,56 @@ Provide accurate classification based on environmental science. If you're unsure
       return data;
     } catch (parseError) {
       console.error("Error parsing LLM response:", parseError);
-      // Fallback with a default classification if parsing fails
+      // Fallback with a specific disposal recommendation if parsing fails
+      const lowerLabel = itemLabel.toLowerCase();
+      let disposal = '';
+      
+      if (lowerLabel.includes('plastic')) {
+        disposal = 'Rinse thoroughly, remove labels if possible, place in plastic recycling';
+      } else if (lowerLabel.includes('paper') || lowerLabel.includes('cardboard')) {
+        disposal = 'Remove tape/staples, flatten, place in paper recycling';
+      } else if (lowerLabel.includes('metal')) {
+        disposal = 'Clean, crush if possible, place in metal recycling';
+      } else if (lowerLabel.includes('glass')) {
+        disposal = 'Rinse, remove caps and lids, place in glass recycling';
+      } else if (lowerLabel.includes('organic') || lowerLabel.includes('food')) {
+        disposal = 'Place in compost bin or food waste collection';
+      } else {
+        disposal = 'Separate by material type and recycle accordingly';
+      }
+
       return {
-        type: itemLabel.toLowerCase().includes('plastic') ? 'non-biodegradable' : 'biodegradable',
+        type: lowerLabel.includes('plastic') ? 'non-biodegradable' : 'biodegradable',
         material: 'unknown',
-        disposal: 'Check local waste guidelines',
+        disposal: disposal,
         recyclable: 'unknown',
         hazardous: 'no'
       };
     }
   } catch (error) {
     console.error("Error classifying waste item:", error);
-    // Return a fallback classification
+    // Return a fallback classification with specific disposal
+    const lowerLabel = itemLabel.toLowerCase();
+    let disposal = '';
+    
+    if (lowerLabel.includes('plastic')) {
+      disposal = 'Rinse thoroughly, remove labels if possible, place in plastic recycling';
+    } else if (lowerLabel.includes('paper') || lowerLabel.includes('cardboard')) {
+      disposal = 'Remove tape/staples, flatten, place in paper recycling';
+    } else if (lowerLabel.includes('metal')) {
+      disposal = 'Clean, crush if possible, place in metal recycling';
+    } else if (lowerLabel.includes('glass')) {
+      disposal = 'Rinse, remove caps and lids, place in glass recycling';
+    } else if (lowerLabel.includes('organic') || lowerLabel.includes('food')) {
+      disposal = 'Place in compost bin or food waste collection';
+    } else {
+      disposal = 'Separate by material type and recycle accordingly';
+    }
+    
     return {
       type: 'unknown',
       material: 'unknown',
-      disposal: 'Check local waste guidelines',
+      disposal: disposal,
       recyclable: 'unknown',
       hazardous: 'no'
     };
@@ -108,7 +144,7 @@ Format your response exactly as shown in this JSON format:
       "label": "[item1]",
       "type": "[biodegradable or non-biodegradable]",
       "material": "[primary material, e.g., plastic, paper, wood, metal, glass, etc.]",
-      "disposal": "[brief disposal recommendation]",
+      "disposal": "[SPECIFIC ACTIONABLE disposal recommendation with concrete steps - NEVER use 'Check local guidelines']",
       "recyclable": "[yes, no, or potentially]",
       "hazardous": "[yes or no]"
     },
@@ -116,13 +152,15 @@ Format your response exactly as shown in this JSON format:
       "label": "[item2]",
       "type": "[biodegradable or non-biodegradable]",
       "material": "[primary material]",
-      "disposal": "[disposal recommendation]",
+      "disposal": "[SPECIFIC ACTIONABLE disposal recommendation with concrete steps]",
       "recyclable": "[yes, no, or potentially]",
       "hazardous": "[yes or no]"
     }
     // and so on for each item
   ]
 }
+
+IMPORTANT: For disposal recommendations, ALWAYS provide specific, actionable steps like "Rinse thoroughly, remove labels, place in recycling bin" instead of generic advice like "Check local guidelines".
 
 Provide accurate classifications based on environmental science. Ensure every item has a complete classification with all fields filled in.`;
 
@@ -137,27 +175,69 @@ Provide accurate classifications based on environmental science. Ensure every it
       return data.classifications;
     } catch (parseError) {
       console.error("Error parsing LLM batch response:", parseError);
-      // Fallback - classify each item with basic logic
-      return itemLabels.map(label => ({
-        label,
-        type: label.toLowerCase().includes('plastic') ? 'non-biodegradable' : 'biodegradable',
-        material: 'unknown',
-        disposal: 'Check local waste guidelines',
-        recyclable: 'unknown',
-        hazardous: 'no'
-      }));
+      // Fallback - classify each item with basic logic and specific disposal methods
+      return itemLabels.map(label => {
+        const lowerLabel = label.toLowerCase();
+        let disposal = '';
+        
+        if (lowerLabel.includes('plastic')) {
+          disposal = 'Rinse thoroughly, remove labels if possible, place in plastic recycling';
+        } else if (lowerLabel.includes('paper') || lowerLabel.includes('cardboard')) {
+          disposal = 'Remove tape/staples, flatten, place in paper recycling';
+        } else if (lowerLabel.includes('metal')) {
+          disposal = 'Clean, crush if possible, place in metal recycling';
+        } else if (lowerLabel.includes('glass')) {
+          disposal = 'Rinse, remove caps and lids, place in glass recycling';
+        } else if (lowerLabel.includes('organic') || lowerLabel.includes('food')) {
+          disposal = 'Place in compost bin or food waste collection';
+        } else if (lowerLabel.includes('electronic') || lowerLabel.includes('e-waste')) {
+          disposal = 'Take to electronics recycling center or retailer take-back program';
+        } else {
+          disposal = 'Separate by material type and dispose accordingly';
+        }
+        
+        return {
+          label,
+          type: lowerLabel.includes('plastic') || lowerLabel.includes('metal') ? 'non-biodegradable' : 'biodegradable',
+          material: lowerLabel,
+          disposal: disposal,
+          recyclable: lowerLabel.includes('plastic') || lowerLabel.includes('paper') || lowerLabel.includes('metal') || lowerLabel.includes('glass') ? 'yes' : 'unknown',
+          hazardous: 'no'
+        };
+      });
     }
   } catch (error) {
     console.error("Error batch classifying waste items:", error);
-    // Return fallback classifications
-    return itemLabels.map(label => ({
-      label,
-      type: 'unknown',
-      material: 'unknown',
-      disposal: 'Check local waste guidelines',
-      recyclable: 'unknown',
-      hazardous: 'no'
-    }));
+    // Return fallback classifications with specific disposal instructions
+    return itemLabels.map(label => {
+      const lowerLabel = label.toLowerCase();
+      let disposal = '';
+      
+      if (lowerLabel.includes('plastic')) {
+        disposal = 'Rinse thoroughly, remove labels if possible, place in plastic recycling';
+      } else if (lowerLabel.includes('paper') || lowerLabel.includes('cardboard')) {
+        disposal = 'Remove tape/staples, flatten, place in paper recycling';
+      } else if (lowerLabel.includes('metal')) {
+        disposal = 'Clean, crush if possible, place in metal recycling';
+      } else if (lowerLabel.includes('glass')) {
+        disposal = 'Rinse, remove caps and lids, place in glass recycling';
+      } else if (lowerLabel.includes('organic') || lowerLabel.includes('food')) {
+        disposal = 'Place in compost bin or food waste collection';
+      } else if (lowerLabel.includes('electronic') || lowerLabel.includes('e-waste')) {
+        disposal = 'Take to electronics recycling center or retailer take-back program';
+      } else {
+        disposal = 'Separate by material type and dispose accordingly';
+      }
+      
+      return {
+        label,
+        type: 'unknown',
+        material: 'unknown',
+        disposal: disposal,
+        recyclable: 'unknown',
+        hazardous: 'no'
+      };
+    });
   }
 }
 

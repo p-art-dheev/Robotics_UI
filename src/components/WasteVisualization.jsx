@@ -243,7 +243,7 @@ function WasteVisualization({ wasteData }) {
               type: label.toLowerCase().includes('plastic') || 
                     label.toLowerCase().includes('e-waste') ? 'non-biodegradable' : 'biodegradable',
               material: label.toLowerCase(),
-              disposal: 'Check local waste guidelines',
+              disposal: getSpecificDisposalMethod(label),
               recyclable: label.toLowerCase().includes('paper') || 
                          label.toLowerCase().includes('cardboard') ? 'yes' : 'unknown',
               hazardous: 'no',
@@ -286,7 +286,7 @@ Format your response exactly as shown in this JSON format:
       "label": "[item1]",
       "type": "[biodegradable or non-biodegradable]",
       "material": "[primary material, e.g., plastic, paper, wood, metal, glass, etc.]",
-      "disposal": "[brief disposal recommendation]",
+      "disposal": "[give SPECIFIC, ACTIONABLE disposal recommendation - NEVER say 'check local guidelines', instead provide concrete steps like 'Rinse, remove caps, place in dedicated glass recycling']",
       "recyclable": "[yes, no, or potentially]",
       "hazardous": "[yes or no]",
       "icon": "[FontAwesome 5 icon class name most suitable for this waste item, e.g. fas fa-box, fas fa-tshirt, etc.]"
@@ -295,7 +295,7 @@ Format your response exactly as shown in this JSON format:
       "label": "[item2]",
       "type": "[biodegradable or non-biodegradable]",
       "material": "[primary material]",
-      "disposal": "[disposal recommendation]",
+      "disposal": "[SPECIFIC, DETAILED disposal recommendation - be precise and actionable]",
       "recyclable": "[yes, no, or potentially]",
       "hazardous": "[yes or no]",
       "icon": "[appropriate FontAwesome 5 icon class]"
@@ -304,7 +304,9 @@ Format your response exactly as shown in this JSON format:
   ]
 }
 
-Important: Use the EXACT following icon mappings for these waste types:
+IMPORTANT: 
+1. For disposal recommendations, ALWAYS provide specific, actionable steps like "Rinse, separate components, place in paper recycling" instead of generic advice like "Check local guidelines".
+2. Use the EXACT following icon mappings for these waste types:
 - cardboard: "fas fa-box"
 - textile: "fas fa-tshirt"
 - paper: "fas fa-scroll"
@@ -622,6 +624,32 @@ Provide accurate classifications based on environmental science. Ensure every it
   // Check if waste data is valid for visualization
   const hasValidPositionData = wasteData && wasteData.length > 0 && wasteData[0].box_2d;
 
+  // Function to get specific disposal methods instead of vague guidelines
+  const getSpecificDisposalMethod = (label) => {
+    const lowerLabel = label.toLowerCase();
+    
+    // Return specific disposal instructions based on material type
+    if (lowerLabel.includes('plastic')) {
+      return 'Rinse, remove labels if possible, and place in plastics recycling bin';
+    } else if (lowerLabel.includes('paper') || lowerLabel.includes('cardboard')) {
+      return 'Remove tape/staples, flatten, and place in paper recycling';
+    } else if (lowerLabel.includes('glass')) {
+      return 'Rinse, remove caps, and place in glass recycling';
+    } else if (lowerLabel.includes('metal') || lowerLabel.includes('can')) {
+      return 'Rinse, remove labels if possible, and place in metals recycling';
+    } else if (lowerLabel.includes('e-waste') || lowerLabel.includes('electronic')) {
+      return 'Take to electronics recycling center or manufacturer take-back program';
+    } else if (lowerLabel.includes('textile') || lowerLabel.includes('fabric') || lowerLabel.includes('cloth')) {
+      return 'Donate if in good condition, or take to textile recycling drop-off';
+    } else if (lowerLabel.includes('wood')) {
+      return 'Untreated wood can be composted; treated wood goes to special waste facility';
+    } else if (lowerLabel.includes('organic') || lowerLabel.includes('food')) {
+      return 'Place in compost bin or food waste collection';
+    }
+    
+    return 'Separate by material type and recycle according to local recycling program';
+  };
+
   return (
     <section>
       <div className="card">
@@ -716,8 +744,14 @@ Provide accurate classifications based on environmental science. Ensure every it
                   const wasteInfo = aiClassifications[label] || wasteTypeMap[label] || {
                     type: 'unknown',
                     material: 'unknown',
-                    disposal: 'Check local waste guidelines'
+                    disposal: getSpecificDisposalMethod(label)
                   };
+                  
+                  // Ensure we're not displaying "Check local waste guidelines" anywhere
+                  if (wasteInfo.disposal === 'Check local waste guidelines') {
+                    wasteInfo.disposal = getSpecificDisposalMethod(label);
+                  }
+                  
                   const iconClass = getWasteIcon(label, wasteInfo.type, wasteInfo.material);
                   const backgroundColor = getWasteItemColor(label);
 
