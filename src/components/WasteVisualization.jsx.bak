@@ -701,12 +701,7 @@ Provide accurate classifications based on environmental science. Ensure every it
                   title={`${item.formattedLabel} (${wasteInfo.type})`}
                 >
                   <div className="text-center">
-                    <i className={iconClass} style={{
-                      width: '20px',
-                      textAlign: 'center',
-                      display: 'inline-block',
-                      marginBottom: '4px'
-                    }}></i>
+                    <i className={iconClass}></i>
                     <div className="text-xs">{item.formattedLabel}</div>
                   </div>
                 </div>
