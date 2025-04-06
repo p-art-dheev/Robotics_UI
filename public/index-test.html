@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoVision Test</title>
+</head>
+<body>
+  <h1>EcoVision Waste Analyzer Test Page</h1>
+  <p>If you can see this page, the server is working correctly.</p>
+  <p>Please check the React application at <a href="/">/</a></p>
+  
+  <h2>Test Waste JSON Data</h2>
+  <pre id="waste-data">Loading waste data...</pre>
+
+  <script>
+    // Try loading the waste.json file
+    fetch('/waste.json')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('waste-data').textContent = JSON.stringify(data, null, 2);
+      })
+      .catch(error => {
+        document.getElementById('waste-data').textContent = 'Error loading waste data: ' + error.message;
+      });
+  </script>
+</body>
+</html> 
