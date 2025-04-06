@@ -10,12 +10,12 @@
     },
     {
         "box_2d": [
-            425,
-            113,
-            490,
-            255
+            100,
+            300,
+            500,
+            600
         ],
-        "label": "coconut shell"
+        "label": "plastic cover"
     },
     {
         "box_2d": [
@@ -24,7 +24,7 @@
             408,
             678
         ],
-        "label": "jute bag"
+        "label": "aluminum foil"
     },
     {
         "box_2d": [
